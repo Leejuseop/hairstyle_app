@@ -26,6 +26,30 @@ public class UserController {
         return "login";
     }
 
+    @PostMapping("/login")
+    public String loginService(@RequestParam("userId") String userId,
+                               @RequestParam("userPassword") String userPassword,
+                               HttpSession session,
+                               RedirectAttributes rttr){
+        Optional<User> userOptional = userRepository.findByUserId(userId);
+
+        if(userOptional.isPresent()){
+            User user = userOptional.get();
+            if(user.getUserPassword().equals(userPassword)){
+                session.setAttribute("loginUser", user);
+                return "redirect:/main";
+            }
+            else{
+                rttr.addFlashAttribute("loginError", "아이디 또는 비밀번호가 틀렸습니다.");
+                return "redirect:/login";
+            }
+        }
+        else{
+            rttr.addFlashAttribute("loginError", "아이디 또는 비밀번호가 틀렸습니다.");
+            return "redirect:/login";
+        }
+    }
+
     @GetMapping("/join")
     public String joinPage(){
         return "join";
