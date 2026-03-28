@@ -2,6 +2,7 @@ package com.juseop.hair_simulator.controller;
 
 import com.juseop.hair_simulator.domain.User;
 import com.juseop.hair_simulator.repository.UserRepository;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -11,13 +12,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Optional;
+
 @Slf4j
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/user")
 public class UserController {
 
     private final UserRepository userRepository;
+
+    @GetMapping("/login")
+    public String loginPage(){
+        return "login";
+    }
 
     @GetMapping("/join")
     public String joinPage(){
@@ -35,6 +42,7 @@ public class UserController {
 
         rttr.addFlashAttribute("message", "회원가입이 완료되었습니다.");
 
-        return "redirect:/";
+        return "redirect:/login";
     }
+
 }
