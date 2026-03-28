@@ -25,7 +25,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public String loginService(@RequestParam("userId") String userId,
+    public String login(@RequestParam("userId") String userId,
                                @RequestParam("userPassword") String userPassword,
                                HttpSession session,
                                RedirectAttributes rttr){
@@ -49,7 +49,7 @@ public class UserController {
     }
 
     @PostMapping("/join")
-    public String joinService(@ModelAttribute User user, RedirectAttributes rttr){
+    public String join(@ModelAttribute User user, RedirectAttributes rttr){
 
         userService.join(user);
 
@@ -57,5 +57,7 @@ public class UserController {
 
         return "redirect:/login";
     }
+
+
 
 }

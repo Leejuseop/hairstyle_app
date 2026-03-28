@@ -1,0 +1,62 @@
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <h2 class="mb-4">나의 새로운 헤어 스타일 찾기 💇‍♂️</h2>
+
+            <div id="drop-zone" class="p-5 border border-2 border-dashed rounded-3 bg-light mb-4"
+                 style="border-style: dashed !important; cursor: pointer; transition: 0.3s;">
+                <div class="py-4">
+                    <i class="bi bi-cloud-arrow-up fs-1 text-primary"></i>
+                    <p class="mt-3 mb-1 fw-bold">사진을 여기에 끌어다 놓으세요</p>
+                    <p class="text-muted small">또는 클릭하여 파일 선택 (JPG, PNG)</p>
+                    <input type="file" id="file-input" name="imageFile" hidden accept="image/*">
+                </div>
+                <img id="preview" class="img-fluid rounded mt-3 d-none" style="max-height: 300px;">
+            </div>
+
+            <button id="submit-btn" class="btn btn-primary btn-lg w-100 disabled" onclick="moveToSimulate()">
+                시뮬레이션 실행하기 🚀
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const preview = document.getElementById('preview');
+    const submitBtn = document.getElementById('submit-btn');
+
+    // 드롭존 클릭 시 파일 탐색기 열기
+    dropZone.onclick = () => fileInput.click();
+
+    // 파일 선택 시 처리
+    fileInput.onchange = (e) => handleFile(e.target.files[0]);
+
+    // 드래그 효과
+    dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('bg-secondary', 'bg-opacity-10'); };
+    dropZone.ondragleave = () => { dropZone.classList.remove('bg-secondary', 'bg-opacity-10'); };
+
+    dropZone.ondrop = (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('bg-secondary', 'bg-opacity-10');
+        handleFile(e.dataTransfer.files[0]);
+    };
+
+    function handleFile(file) {
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+                preview.classList.remove('d-none');
+                submitBtn.classList.remove('disabled'); // 파일 있으면 버튼 활성화!
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function moveToSimulate() {
+        // 일단 페이지 이동만! 나중에 실제 파일 전송 로직 붙일 거임
+        location.href = '/simulate';
+    }
+</script>
