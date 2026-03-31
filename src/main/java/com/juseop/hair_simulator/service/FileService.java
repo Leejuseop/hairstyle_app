@@ -1,11 +1,13 @@
 package com.juseop.hair_simulator.service;
 
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
+@Service
 public class FileService {
     private final String uploadDir = "C:/hairstyle_app/uploads/";
 

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>MyHairSim - 시뮬레이션</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f0f2f5; }
+        .result-card { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .img-container { border: 5px solid #eee; border-radius: 15px; overflow: hidden; background: #fff; }
+        .uploaded-img { width: 100%; max-height: 500px; object-fit: contain; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-primary shadow-sm mb-5">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/main">Hair-Simulator</a>
+        <a class="btn btn-outline-light btn-sm" href="/main">다시 업로드</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="result-card">
+                <h2 class="mb-4 text-primary fw-bold">업로드 성공! 분석 준비 완료 🤖</h2>
+
+                <div class="img-container mb-4">
+                    <img th:src="@{/outputs/{name}(name=${fileName})}" class="uploaded-img" alt="업로드 이미지">
+                </div>
+
+                <div class="alert alert-info">
+                    파일명: <span th:text="${fileName}" class="small">파일명.jpg</span>
+                </div>
+
+                <div class="d-grid gap-2 d-md-block">
+                    <button class="btn btn-success btn-lg px-5 me-md-2">헤어 스타일 변경 시작</button>
+                    <a href="/main" class="btn btn-secondary btn-lg px-5">취소</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
