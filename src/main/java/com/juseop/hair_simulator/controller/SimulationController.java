@@ -46,12 +46,9 @@ public class SimulationController {
 
     @GetMapping("/simulate")
     public String simulatePage(@RequestParam("fileName") String fileName, Model model) {
-        // 1. 주소창의 ?fileName=... 값을 @RequestParam으로 쏙 뽑아옵니다.
-        // 2. 그 값을 그대로 다시 Model에 담아서 simulate.html로 보냅니다.
+
         model.addAttribute("fileName", fileName);
 
-        // 3. (중요) 하단 갤러리 에러 방지를 위해 빈 리스트라도 일단 넣어둡니다.
-        // 나중에 여기에 진짜 스타일 사진 리스트를 채우면 됩니다! ㅋㅋㅋ
         model.addAttribute("styleSamples", new ArrayList<String>());
 
         return "simulate";
