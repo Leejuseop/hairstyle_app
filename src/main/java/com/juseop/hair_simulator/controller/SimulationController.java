@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 @Controller
@@ -33,24 +32,21 @@ public class SimulationController {
             return "redirect:/main";
         }
 
-        try {
-            String saveFileName = fileService.saveFile(file);
+        String saveFileName = fileService.processAndSaveHairImage(file);
+
+        if (saveFileName != null) {
             rttr.addAttribute("fileName", saveFileName);
             return "redirect:/simulate";
-        } catch (IOException e) {
-            rttr.addFlashAttribute("msg", "파일 저장 중 오류가 발생했습니다.");
+        } else {
+            rttr.addFlashAttribute("msg", "누끼 처리 중 오류가 발생했습니다.");
             return "redirect:/main";
         }
-
     }
 
     @GetMapping("/simulate")
     public String simulatePage(@RequestParam("fileName") String fileName, Model model) {
-
         model.addAttribute("fileName", fileName);
-
         model.addAttribute("styleSamples", new ArrayList<String>());
-
         return "simulate";
     }
 }
