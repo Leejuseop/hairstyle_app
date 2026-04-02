@@ -9,11 +9,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:///C:/hairstyle_app/uploads/");
-
-        registry.addResourceHandler("/outputs/**")
-                .addResourceLocations("file:///C:/hairstyle_app/outputs/");
+        registry.addResourceHandler("/storage/**")
+                .addResourceLocations("file:///C:/hairstyle_app/users/");
     }
 }

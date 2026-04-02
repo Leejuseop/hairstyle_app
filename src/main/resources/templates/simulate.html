@@ -3,27 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyHairSim - 스마트 시뮬레이션</title>
+    <title>HairSimulator</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <style>
         body { background-color: #121212; color: #e0e0e0; font-family: 'Noto Sans KR', sans-serif; overflow: hidden; }
 
-        /* 상단 컨트롤 타워 */
         .top-nav {
             height: 60px; background: #1e1e1e; display: flex; align-items: center;
             justify-content: space-between; padding: 0 20px; border-bottom: 1px solid #333;
         }
 
-        /* 중앙 캔버스 영역 */
         .canvas-section {
             height: 50vh; display: flex; align-items: center; justify-content: center;
             background: #000; position: relative; overflow: hidden;
         }
         #hair-canvas { border: 1px dashed #444; }
 
-        /* 하단 갤러리 영역 */
         .gallery-section {
             padding: 15px 20px; background: #1e1e1e;
             border-radius: 25px 25px 0 0; height: 40vh;
@@ -49,7 +46,6 @@
             color: #fff; font-size: 10px; text-align: center; padding: 2px 0;
         }
 
-        /* 편집 모드 활성화 스타일 */
         .edit-active { border: 2px solid #ff4757 !important; box-shadow: 0 0 15px rgba(255, 71, 87, 0.4); }
     </style>
 </head>
@@ -70,7 +66,9 @@
 </nav>
 
 <div class="canvas-section">
-    <canvas id="hair-canvas"></canvas>
+    <div class="canvas-container">
+        <canvas id="hair-canvas"></canvas>
+    </div>
 </div>
 
 <div class="gallery-section">
@@ -89,7 +87,7 @@
                 <div class="row g-2">
                     <div class="col-3" th:each="sample : ${styleSamples}">
                         <div class="style-card" th:onclick="applyAiStyle([[${sample}]])">
-                            <img th:src="@{/outputs/{name}(name=${sample})}" alt="스타일">
+                            <img th:src="@{/storage/{name}(name=${sample})}" alt="스타일">
                             <div class="style-name" th:text="${sample}">스타일명</div>
                         </div>
                     </div>
@@ -112,7 +110,6 @@
 </div>
 
 <script th:inline="javascript">
-    // 1. 캔버스 초기화
     const canvas = new fabric.Canvas('hair-canvas', {
         width: 350,
         height: 450,
@@ -122,9 +119,13 @@
     let isEditMode = false;
     const originalFileName = [[${fileName}]];
 
-    // 2. 초기 이미지 로드 (배경)
     function loadMainImage(fileName) {
-        fabric.Image.fromURL("/outputs/" + fileName, function(img) {
+        if(!fileName) return;
+
+        const fullPath = "/storage/" + fileName;
+        console.log("이미지 로드 시도 경로:", fullPath);
+
+        fabric.Image.fromURL(fullPath, function(img) {
             canvas.clear();
             img.set({
                 left: 0, top: 0, selectable: false, evented: false
@@ -132,45 +133,39 @@
             img.scaleToWidth(canvas.width);
             canvas.add(img);
             canvas.sendToBack(img);
-        });
+        }, { crossOrigin: 'anonymous' }); // CORS 설정 추가
     }
 
-    // 초기 실행
     loadMainImage(originalFileName);
 
-    // 3. 편집 모드 토글
     function toggleEditMode() {
         isEditMode = !isEditMode;
         const btn = document.getElementById('edit-toggle-btn');
         const badge = document.getElementById('mode-badge');
-        const canvasEl = document.querySelector('.canvas-container');
+        const canvasWrapper = document.querySelector('.canvas-container');
 
         if (isEditMode) {
             btn.innerHTML = '<i class="bi bi-check-lg"></i> 편집 완료';
             btn.className = 'btn btn-danger btn-sm';
             badge.innerText = "🔥 편집 모드 (Warp)";
             badge.className = "badge bg-danger";
-            canvasEl.classList.add('edit-active');
+            if(canvasWrapper) canvasWrapper.classList.add('edit-active');
         } else {
             btn.innerHTML = '<i class="bi bi-magic"></i> 편집 시작';
             btn.className = 'btn btn-outline-danger btn-sm';
             badge.innerText = "일반 모드";
             badge.className = "badge bg-secondary";
-            canvasEl.classList.remove('edit-active');
+            if(canvasWrapper) canvasWrapper.classList.remove('edit-active');
         }
     }
 
-    // 4. 대표 스타일 AI 적용 (방식 A 시뮬레이션)
     function applyAiStyle(styleName) {
         if(confirm(styleName + " 스타일을 AI로 합성하시겠습니까?")) {
-            // 현재는 이미지 교체로 시뮬레이션 (나중에 fetch로 AI 결과 수신)
             loadMainImage(styleName);
         }
     }
 
-    // 5. 파츠 추가 (방식 B)
     function addPart(partName) {
-        // 임시 파츠 (나중에 실제 PNG 로드)
         const part = new fabric.Rect({
             left: 100, top: 100, width: 80, height: 40,
             fill: 'rgba(255, 255, 255, 0.5)', stroke: '#0d6efd'
@@ -180,8 +175,10 @@
     }
 
     function resetCanvas(name) { loadMainImage(name); }
+
     function undo() {
         const objects = canvas.getObjects();
+        // 배경 이미지(0번 인덱스)는 남기고 삭제
         if(objects.length > 1) canvas.remove(objects[objects.length - 1]);
     }
 </script>

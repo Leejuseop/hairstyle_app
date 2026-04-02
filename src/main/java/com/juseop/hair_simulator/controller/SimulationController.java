@@ -1,6 +1,8 @@
 package com.juseop.hair_simulator.controller;
 
+import com.juseop.hair_simulator.domain.User;
 import com.juseop.hair_simulator.service.FileService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,14 +27,16 @@ public class SimulationController {
 
     @PostMapping("/main")
     public String main(@RequestParam("imageFile") MultipartFile file,
+                       HttpSession session,
                        RedirectAttributes rttr) {
+        User user = (User) session.getAttribute("loginUser");
 
         if (file.isEmpty()) {
             rttr.addFlashAttribute("msg", "업로드된 사진이 없습니다. 다시 선택해주세요!");
             return "redirect:/main";
         }
 
-        String saveFileName = fileService.processAndSaveHairImage(file);
+        String saveFileName = fileService.processAndSaveHairImage(file,user.getUserId());
 
         if (saveFileName != null) {
             rttr.addAttribute("fileName", saveFileName);
