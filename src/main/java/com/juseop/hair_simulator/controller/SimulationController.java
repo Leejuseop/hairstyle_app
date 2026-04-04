@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -49,8 +50,9 @@ public class SimulationController {
 
     @GetMapping("/simulate")
     public String simulatePage(@RequestParam("fileName") String fileName, Model model) {
+        List<String> styleSamples = fileService.getStyleSampleList();
         model.addAttribute("fileName", fileName);
-        model.addAttribute("styleSamples", new ArrayList<String>());
+        model.addAttribute("styleSamples", styleSamples);
         return "simulate";
     }
 }

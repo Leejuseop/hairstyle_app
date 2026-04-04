@@ -9,52 +9,50 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <style>
         body { background-color: #121212; color: #e0e0e0; font-family: 'Noto Sans KR', sans-serif; overflow: hidden; }
-
-        .top-nav {
-            height: 60px; background: #1e1e1e; display: flex; align-items: center;
-            justify-content: space-between; padding: 0 20px; border-bottom: 1px solid #333;
-        }
-
-        .canvas-section {
-            height: 50vh; display: flex; align-items: center; justify-content: center;
-            background: #000; position: relative; overflow: hidden;
-        }
+        .top-nav { height: 60px; background: #1e1e1e; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid #333; }
+        .canvas-section { height: 50vh; display: flex; align-items: center; justify-content: center; background: #000; position: relative; overflow: hidden; }
         #hair-canvas { border: 1px dashed #444; }
-
-        .gallery-section {
-            padding: 15px 20px; background: #1e1e1e;
-            border-radius: 25px 25px 0 0; height: 40vh;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
-        }
-
+        .gallery-section { padding: 15px 20px; background: #1e1e1e; border-radius: 25px 25px 0 0; height: 40vh; box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
         .nav-tabs { border-bottom: 1px solid #333; margin-bottom: 15px; }
         .nav-link { color: #888; border: none !important; }
         .nav-link.active { color: #0d6efd !important; background: none !important; border-bottom: 2px solid #0d6efd !important; }
-
         .scroll-container { height: 25vh; overflow-y: auto; padding-right: 5px; }
         .scroll-container::-webkit-scrollbar { width: 5px; }
         .scroll-container::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
 
-        .style-card {
-            cursor: pointer; position: relative; border-radius: 10px; overflow: hidden;
-            background: #2a2a2a; border: 2px solid transparent; transition: 0.2s;
-        }
+        .style-card { cursor: pointer; position: relative; border-radius: 10px; overflow: hidden; background: #2a2a2a; border: 2px solid transparent; transition: 0.2s; height: 100%; min-height: 120px; }
         .style-card:hover { border-color: #0d6efd; transform: translateY(-3px); }
         .style-card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; }
+
+        /* 🎨 [수정] 글씨 크기 키우고 가독성 좋게 변경! */
         .style-name {
-            position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.7);
-            color: #fff; font-size: 10px; text-align: center; padding: 2px 0;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: rgba(0,0,0,0.8);
+            color: #fff;
+            font-size: 14px; /* 10px -> 14px로 UP! */
+            font-weight: 600;
+            text-align: center;
+            padding: 4px 0;
+            letter-spacing: -0.5px;
         }
 
-        .edit-active { border: 2px solid #ff4757 !important; box-shadow: 0 0 15px rgba(255, 71, 87, 0.4); }
+        /* 로딩 애니메이션 */
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
     </style>
 </head>
 <body>
 
+<div id="loading-overlay">
+    <div class="spinner-border text-primary" role="status"></div>
+    <div class="mt-3 text-white">AI가 형의 스타일을 합성하고 있어! 7살 천재 가동 중...</div>
+</div>
+
 <nav class="top-nav">
     <div class="d-flex gap-2">
         <button class="btn btn-dark btn-sm" onclick="undo()"><i class="bi bi-arrow-90deg-left"></i> 뒤로</button>
-        <button class="btn btn-dark btn-sm" th:onclick="resetCanvas([[${fileName}]])"><i class="bi bi-arrow-counterclockwise"></i> 초기화</button>
+        <button class="btn btn-dark btn-sm" th:onclick="loadMainImage([[${fileName}]])"><i class="bi bi-arrow-counterclockwise"></i> 초기화</button>
     </div>
     <div id="mode-badge" class="badge bg-secondary">일반 모드</div>
     <div>
@@ -73,34 +71,27 @@
 
 <div class="gallery-section">
     <ul class="nav nav-tabs" id="myTab" role="tablist">
-        <li class="nav-item">
-            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#styles">대표 스타일 (AI)</button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#parts">세부 파츠</button>
-        </li>
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#styles">대표 스타일 (AI)</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#parts">세부 파츠</button></li>
     </ul>
 
     <div class="tab-content" id="myTabContent">
         <div class="tab-pane fade show active" id="styles">
             <div class="scroll-container">
                 <div class="row g-2">
-                    <div class="col-3" th:each="sample : ${styleSamples}">
-                        <div class="style-card" th:onclick="applyAiStyle([[${sample}]])">
-                            <img th:src="@{/storage/{name}(name=${sample})}" alt="스타일">
-                            <div class="style-name" th:text="${sample}">스타일명</div>
+                    <div class="col-3">
+                        <div class="style-card d-flex flex-column align-items-center justify-content-center"
+                             th:onclick="loadMainImage([[${fileName}]])">
+                            <i class="bi bi-arrow-left-circle fs-1 mb-1 text-primary"></i>
+                            <span style="font-size: 11px;">Original</span>
+                            <div class="style-name">원본으로</div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-        <div class="tab-pane fade" id="parts">
-            <div class="scroll-container">
-                <div class="row g-2">
-                    <div class="col-3" onclick="addPart('front_bangs.png')">
-                        <div class="style-card text-center p-3">
-                            <i class="bi bi-scissors fs-2"></i>
-                            <div class="style-name">앞머리 파츠</div>
+
+                    <div class="col-3" th:each="sample : ${styleSamples}">
+                        <div class="style-card" th:onclick="applyAiStyle([[${sample}]])">
+                            <img th:src="@{/styles/{name}(name=${sample})}" alt="가발">
+                            <div class="style-name" th:text="${#strings.replace(sample, '.png', '')}">스타일명</div>
                         </div>
                     </div>
                 </div>
@@ -111,78 +102,71 @@
 
 <script th:inline="javascript">
     const canvas = new fabric.Canvas('hair-canvas', {
-        width: 350,
-        height: 450,
-        backgroundColor: '#000'
+        width: 350, height: 450, backgroundColor: '#000'
     });
 
     let isEditMode = false;
     const originalFileName = [[${fileName}]];
 
-    function loadMainImage(fileName) {
-        if(!fileName) return;
-
-        const fullPath = "/storage/" + fileName;
-        console.log("이미지 로드 시도 경로:", fullPath);
-
+    function loadMainImage(path) {
+        if(!path) return;
+        const fullPath = "/storage/" + path;
         fabric.Image.fromURL(fullPath, function(img) {
             canvas.clear();
-            img.set({
-                left: 0, top: 0, selectable: false, evented: false
-            });
+            img.set({ left: 0, top: 0, selectable: false, evented: false });
             img.scaleToWidth(canvas.width);
             canvas.add(img);
             canvas.sendToBack(img);
-        }, { crossOrigin: 'anonymous' }); // CORS 설정 추가
+            canvas.renderAll();
+        }, { crossOrigin: 'anonymous' });
     }
 
     loadMainImage(originalFileName);
+
+    function applyAiStyle(styleName) {
+        document.getElementById('loading-overlay').style.display = 'flex';
+        fetch('/api/simulation/compose', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                originalPath: originalFileName,
+                styleName: styleName
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('loading-overlay').style.display = 'none';
+            if(data.success) {
+                loadMainImage(data.resultPath);
+                console.log("합성 성공! 랄끼얏호우!!!");
+            } else {
+                alert("합성 실패! 다시 해봐 형!");
+            }
+        })
+        .catch(err => {
+            document.getElementById('loading-overlay').style.display = 'none';
+            console.error("에러 발생:", err);
+        });
+    }
 
     function toggleEditMode() {
         isEditMode = !isEditMode;
         const btn = document.getElementById('edit-toggle-btn');
         const badge = document.getElementById('mode-badge');
-        const canvasWrapper = document.querySelector('.canvas-container');
-
         if (isEditMode) {
-            btn.innerHTML = '<i class="bi bi-check-lg"></i> 편집 완료';
-            btn.className = 'btn btn-danger btn-sm';
-            badge.innerText = "🔥 편집 모드 (Warp)";
-            badge.className = "badge bg-danger";
-            if(canvasWrapper) canvasWrapper.classList.add('edit-active');
+            btn.innerHTML = '편집 완료'; btn.className = 'btn btn-danger btn-sm';
+            badge.innerText = "🔥 편집 모드"; badge.className = "badge bg-danger";
         } else {
-            btn.innerHTML = '<i class="bi bi-magic"></i> 편집 시작';
-            btn.className = 'btn btn-outline-danger btn-sm';
-            badge.innerText = "일반 모드";
-            badge.className = "badge bg-secondary";
-            if(canvasWrapper) canvasWrapper.classList.remove('edit-active');
+            btn.innerHTML = '편집 시작'; btn.className = 'btn btn-outline-danger btn-sm';
+            badge.innerText = "일반 모드"; badge.className = "badge bg-secondary";
         }
     }
-
-    function applyAiStyle(styleName) {
-        if(confirm(styleName + " 스타일을 AI로 합성하시겠습니까?")) {
-            loadMainImage(styleName);
-        }
-    }
-
-    function addPart(partName) {
-        const part = new fabric.Rect({
-            left: 100, top: 100, width: 80, height: 40,
-            fill: 'rgba(255, 255, 255, 0.5)', stroke: '#0d6efd'
-        });
-        canvas.add(part);
-        canvas.setActiveObject(part);
-    }
-
-    function resetCanvas(name) { loadMainImage(name); }
 
     function undo() {
         const objects = canvas.getObjects();
-        // 배경 이미지(0번 인덱스)는 남기고 삭제
         if(objects.length > 1) canvas.remove(objects[objects.length - 1]);
     }
 </script>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

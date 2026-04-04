@@ -11,5 +11,8 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/storage/**")
                 .addResourceLocations("file:///C:/hairstyle_app/users/");
+
+        registry.addResourceHandler("/styles/**")
+                .addResourceLocations("file:///C:/hairstyle_app/data/hairstyle/");
     }
 }

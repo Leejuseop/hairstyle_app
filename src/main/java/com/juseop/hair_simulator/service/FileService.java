@@ -8,7 +8,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +20,13 @@ public class FileService {
     private final BackgroundRemovalApiService bgRemovalApiService;
 
     private final String BASE_DIR = "C:/hairstyle_app/users/";
+    private final String DATA_PATH = "C:/hairstyle_app/data/hairstyle";
+
+    public List<String> getStyleSampleList(){
+        File directory = new File(DATA_PATH);
+
+        return Arrays.stream(directory.list()).collect(Collectors.toList());
+    }
 
     public String processAndSaveHairImage(MultipartFile file, String userId) {
         try {
@@ -75,4 +85,6 @@ public class FileService {
             fos.flush();
         }
     }
+
+
 }
