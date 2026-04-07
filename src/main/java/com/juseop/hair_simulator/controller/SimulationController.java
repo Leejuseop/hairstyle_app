@@ -2,8 +2,11 @@ package com.juseop.hair_simulator.controller;
 
 import com.juseop.hair_simulator.domain.User;
 import com.juseop.hair_simulator.service.FileService;
+import com.juseop.hair_simulator.service.TextService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,11 +20,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class SimulationController {
 
     private final FileService fileService;
+    private final TextService textService;
 
     @GetMapping("/main")
     public String mainPage() {
@@ -59,13 +64,15 @@ public class SimulationController {
     }
 
     @PostMapping("/userText")
-    public void getText(@RequestBody Map<String, String> request){
+    public ResponseEntity<List<String>> getText(@RequestBody Map<String, String> request,
+                        HttpSession session){
         String text = request.get("rawContent");
 
+        User user = (User) session.getAttribute("loginUser");
 
+        List<String> keywords = textService.saveAndExtract(text, user);
 
-        service.키워드추출(text);
-
-        return 키워드어떤방식이던
+        log.info("✅ [분석 완료] 추출된 키워드: {}", keywords);
+        return ResponseEntity.ok(keywords);
     }
 }

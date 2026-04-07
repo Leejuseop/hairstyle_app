@@ -20,4 +20,10 @@ public class UserHistory {
     @ManyToOne
     @JoinColumn(name = "user_pkId")
     private User user;
+
+    public UserHistory(String rawContent, String keyword, User user){
+        this.user = user;
+        this.rawContent = rawContent;
+        this.keyword = keyword;
+    };
 }
