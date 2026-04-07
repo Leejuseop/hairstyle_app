@@ -6,20 +6,19 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @NoArgsConstructor
-@Entity //For Jpa
+@Entity
 @Getter
 @Setter
-@Table(name = "users") //Avoiding conflict at sql
+@Table(name = "users")
 public class User {
-    @Id //For Jpa
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) //For manage of Pk
-    private Long pkId; //Pk Id
+    private Long pkId;
 
     private String userId;
     private String userPassword;
     private String userName;
 
-    //Constructor
     public User(String userId, String userPassword, String userName){
         this.userId = userId;
         this.userPassword = userPassword;

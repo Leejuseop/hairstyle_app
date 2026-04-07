@@ -28,41 +28,30 @@ public class FileService {
         return Arrays.stream(directory.list()).collect(Collectors.toList());
     }
 
-    public String processAndSaveHairImage(MultipartFile file, String userId) {
+    public String removeBackground(MultipartFile file, String userId) {
         try {
             String userUploadDir = BASE_DIR + userId + "/uploads/";
-            String userOutputDir = BASE_DIR + userId + "/outputs/";
+            String userOutputDir = BASE_DIR + userId + "/outputs/bgremoved/";
 
             String savedName = saveFile(file, userUploadDir);
             if (savedName == null) return null;
 
-            byte[] processedBytes = bgRemovalApiService.removeBackground(userUploadDir + savedName);
+            byte[] processedBytes = bgRemovalApiService.callApi(userUploadDir + savedName);
 
             if (processedBytes != null) {
-                File outputFolder = new File(userOutputDir);
-                if (!outputFolder.exists()) {
-                    outputFolder.mkdirs();
-                }
-
-                String fileNameWithoutExt = savedName.substring(0, savedName.lastIndexOf("."));
-                String outputFileName = "processed_" + fileNameWithoutExt + ".png";
-
+                String outputFileName = "processed_" + UUID.randomUUID().toString() + ".png";
                 saveBytesToFile(processedBytes, userOutputDir + outputFileName);
 
-                return userId + "/outputs/" + outputFileName;
+                return "/storage/" + userId + "/outputs/bgremoved/" + outputFileName;
             }
-
-            return userId + "/" + savedName;
-
+            return "/storage/" + userId + "/uploads/" + savedName;
         } catch (Exception e) {
-            System.err.println("파일 처리 중 오류 발생: " + e.getMessage());
-            e.printStackTrace();
             return null;
         }
     }
 
-    public String saveFile(MultipartFile file, String uploadPath) throws IOException {
-        File folder = new File(uploadPath);
+    public String saveFile(MultipartFile file, String savePath) throws IOException {
+        File folder = new File(savePath);
         if (!folder.exists()) {
             folder.mkdirs();
         }
@@ -70,17 +59,35 @@ public class FileService {
         String originalFileName = file.getOriginalFilename();
         if (originalFileName == null) return null;
 
-        String uuid = UUID.randomUUID().toString();
-        String savedName = uuid + "_" + originalFileName;
+        int lastDotIndex = originalFileName.lastIndexOf(".");
 
-        File savedPath = new File(uploadPath + savedName);
+        String fileNameOnly;
+        String extension;
+
+        if (lastDotIndex == -1) {
+            fileNameOnly = originalFileName;
+            extension = "";
+        } else {
+            fileNameOnly = originalFileName.substring(0, lastDotIndex);
+            extension = originalFileName.substring(lastDotIndex);
+        }
+
+        String uuid = UUID.randomUUID().toString();
+        String savedName = fileNameOnly + "_" + uuid + extension;
+
+        File savedPath = new File(savePath + savedName);
         file.transferTo(savedPath);
 
         return savedName;
     }
 
-    private void saveBytesToFile(byte[] data, String filePath) throws IOException {
-        try (FileOutputStream fos = new FileOutputStream(filePath)) {
+    public void saveBytesToFile(byte[] data, String savePath) throws IOException {
+        File file = new File(savePath);
+        File parent = file.getParentFile();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
+        try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(data);
             fos.flush();
         }

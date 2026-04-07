@@ -37,7 +37,7 @@ public class SimulationController {
             return "redirect:/main";
         }
 
-        String saveFileName = fileService.processAndSaveHairImage(file,user.getUserId());
+        String saveFileName = fileService.removeBackground(file,user.getUserId());
 
         if (saveFileName != null) {
             rttr.addAttribute("fileName", saveFileName);
