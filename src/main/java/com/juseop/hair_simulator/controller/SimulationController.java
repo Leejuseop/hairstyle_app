@@ -8,12 +8,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
@@ -54,5 +56,16 @@ public class SimulationController {
         model.addAttribute("fileName", fileName);
         model.addAttribute("styleSamples", styleSamples);
         return "simulate";
+    }
+
+    @PostMapping("/userText")
+    public void getText(@RequestBody Map<String, String> request){
+        String text = request.get("rawContent");
+
+
+
+        service.키워드추출(text);
+
+        return 키워드어떤방식이던
     }
 }
