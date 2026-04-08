@@ -72,6 +72,7 @@ public class SimulationController {
 
         List<String> keywords = textService.saveAndExtract(text, user);
 
+
         return ResponseEntity.ok(keywords);
     }
 }

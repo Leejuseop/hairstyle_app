@@ -18,11 +18,13 @@ public class User {
     private String userId;
     private String userPassword;
     private String userName;
+    private String userGender; // men, women -> select at join page button
 
-    public User(String userId, String userPassword, String userName){
+    public User(String userId, String userPassword, String userName, String userGender){
         this.userId = userId;
         this.userPassword = userPassword;
         this.userName = userName;
+        this.userGender = userGender;
     }
 
 }
