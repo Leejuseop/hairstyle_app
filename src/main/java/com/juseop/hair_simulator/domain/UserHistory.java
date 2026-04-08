@@ -15,15 +15,13 @@ public class UserHistory {
     private Long pkId;
 
     private String rawContent;
-    private String keyword;
 
     @ManyToOne
     @JoinColumn(name = "user_pkId")
     private User user;
 
-    public UserHistory(String rawContent, String keyword, User user){
+    public UserHistory(String rawContent, User user){
         this.user = user;
         this.rawContent = rawContent;
-        this.keyword = keyword;
     };
 }
