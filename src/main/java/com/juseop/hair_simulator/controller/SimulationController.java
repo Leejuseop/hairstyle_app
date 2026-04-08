@@ -1,7 +1,10 @@
 package com.juseop.hair_simulator.controller;
 
+import com.juseop.hair_simulator.domain.HairStyle;
 import com.juseop.hair_simulator.domain.User;
+import com.juseop.hair_simulator.dto.StyleRecommendResponse;
 import com.juseop.hair_simulator.service.FileService;
+import com.juseop.hair_simulator.service.HairStyleService;
 import com.juseop.hair_simulator.service.TextService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ public class SimulationController {
 
     private final FileService fileService;
     private final TextService textService;
+    private final HairStyleService hairStyleService;
 
     @GetMapping("/main")
     public String mainPage() {
@@ -64,15 +68,22 @@ public class SimulationController {
     }
 
     @PostMapping("/userText")
-    public ResponseEntity<List<String>> getText(@RequestBody Map<String, String> request,
-                        HttpSession session){
+    public ResponseEntity<StyleRecommendResponse> getText(@RequestBody Map<String, String> request,
+                                                          HttpSession session){
         String text = request.get("rawContent");
-
         User user = (User) session.getAttribute("loginUser");
 
         List<String> keywords = textService.saveAndExtract(text, user);
+        List<HairStyle> hairStyles = hairStyleService.getRecommendedStyles(keywords, user);
 
+        StyleRecommendResponse styleRecommendResponse = new StyleRecommendResponse(keywords, hairStyles);
 
-        return ResponseEntity.ok(keywords);
+        for (int i = 0; i < hairStyles.size(); i++) {
+            HairStyle s = hairStyles.get(i);
+            log.info("[{}위] 스타일: {}, 길이: {}, 색상: {}, 이미지경로: {}",
+                    (i + 1), s.getHairStyle(), s.getHairLength(), s.getHairColor(), s.getImagePath());
+        }
+
+        return ResponseEntity.ok(styleRecommendResponse);
     }
 }
