@@ -72,7 +72,6 @@ public class SimulationController {
 
         List<String> keywords = textService.saveAndExtract(text, user);
 
-        log.info("✅ [분석 완료] 추출된 키워드: {}", keywords);
         return ResponseEntity.ok(keywords);
     }
 }
