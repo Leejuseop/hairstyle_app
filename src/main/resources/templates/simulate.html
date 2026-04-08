@@ -16,9 +16,9 @@
         /* 🔍 검색 섹션 스타일 */
         .search-section { padding: 15px 20px; background: #1e1e1e; border-bottom: 1px solid #333; height: auto; min-height: 10vh; display: flex; flex-direction: column; align-items: center; }
 
-        /* ⚽️ 키워드 배지 스타일 */
+        /* ⚽️ 키워드 배지 스타일 추가! */
         #keyword-results { width: 100%; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center; }
-        .keyword-badge { background: #0d6efd; color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; animation: fadeIn 0.5s ease; border: 1px solid rgba(255,255,255,0.2); }
+        .keyword-badge { background: #0d6efd; color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; animation: fadeIn 0.5s ease; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -131,18 +131,7 @@
 
     loadMainImage(originalFileName);
 
-    // ⚽️ [변환기] 숫자를 한글로 바꿔주는 마법의 함수!
-    function getKeywordLabel(word) {
-        const lengthMap = {
-            "1": "아주짧은",
-            "2": "짧은",
-            "3": "보통",
-            "4": "긴",
-            "5": "매우긴"
-        };
-        return lengthMap[word] || word; // 1~5면 한글로, 아니면 그대로!
-    }
-
+    // 📍 [핵심] 키워드 추출 및 화면 표시 로직
     function saveAndFetchStyles() {
         const inputField = document.getElementById('user-style-input');
         const rawText = inputField.value;
@@ -162,11 +151,13 @@
         })
         .then(res => {
             if (!res.ok) throw new Error("형 로그인이 안됐거나 서버가 아파!");
-            return res.json();
+            return res.json(); // 서버에서 List<String>이 온다!
         })
         .then(keywords => {
             document.getElementById('loading-overlay').style.display = 'none';
-            keywordContainer.innerHTML = '';
+
+            // ⚽️ 키워드 그리기 로직 시작!
+            keywordContainer.innerHTML = ''; // 기존 태그 싹 비우기
 
             if(keywords.length === 0) {
                 keywordContainer.innerHTML = '<span class="text-secondary small">추출된 키워드가 없어 형...</span>';
@@ -174,11 +165,12 @@
                 keywords.forEach(word => {
                     const badge = document.createElement('span');
                     badge.className = 'keyword-badge';
-                    // ⚽️ 여기서 변환 함수를 거쳐서 출력!
-                    badge.innerText = '#' + getKeywordLabel(word);
+                    badge.innerText = '#' + word;
                     keywordContainer.appendChild(badge);
                 });
             }
+
+            // 입력창 비우기 (매너!)
             inputField.value = '';
         })
         .catch(err => {
@@ -188,6 +180,7 @@
         });
     }
 
+    // 나머지 시뮬레이션 관련 함수들 (동일)...
     function applyAiStyle(styleName) { /* 생략 */ }
     function toggleEditMode() { /* 생략 */ }
     function undo() { /* 생략 */ }
