@@ -1,10 +1,9 @@
 package com.juseop.hair_simulator.service;
 
-import com.juseop.hair_simulator.domain.HairStyle;
 import com.juseop.hair_simulator.domain.User;
 import com.juseop.hair_simulator.domain.UserHistory;
 import com.juseop.hair_simulator.domain.UserKeyword;
-import com.juseop.hair_simulator.dto.TextToFilter;
+import com.juseop.hair_simulator.dto.HairFilterDto;
 import com.juseop.hair_simulator.repository.HairStyleRepository;
 import com.juseop.hair_simulator.repository.UserHistoryRepository;
 import com.juseop.hair_simulator.repository.UserKeywordRepository;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,14 +22,11 @@ public class HairStyleService {
     private final UserHistoryRepository userHistoryRepository;
     private final UserKeywordRepository userKeywordRepository;
 
-    public TextToFilter latestKeywordToFilter(User user) {
+    public HairFilterDto latestKeywordToFilter(User user) {
         UserHistory latestHistory = userHistoryRepository.findFirstByUserOrderByPkIdDesc(user);
-
         List<UserKeyword> keywords = userKeywordRepository.findByUserHistory(latestHistory);
-
-        String style = "";
-        Integer minLength = 1;
-        Integer maxLength = 10;
+        HairFilterDto dto = new HairFilterDto();
+        dto.setGender(user.getUserGender());
 
         for (UserKeyword uk : keywords) {
             String category = uk.getCategory();
@@ -39,15 +34,13 @@ public class HairStyleService {
 
             if ("LENGTH".equals(category)) {
                 int len = Integer.parseInt(val);
-                minLength = len;
-                maxLength = len;
-            }
-            else if ("STYLE".equals(category)) {
-                style = val;
+                dto.setMinLen(len);
+                dto.setMaxLen(len);
+            } else if ("STYLE".equals(category)) {
+                dto.setStyle(val);
             }
         }
-
-        return new TextToFilter(style, minLength, maxLength);
+        return dto;
     }
 
     /*

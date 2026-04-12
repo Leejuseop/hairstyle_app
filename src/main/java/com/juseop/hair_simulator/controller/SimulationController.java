@@ -1,8 +1,7 @@
 package com.juseop.hair_simulator.controller;
 
-import com.juseop.hair_simulator.domain.HairStyle;
 import com.juseop.hair_simulator.domain.User;
-import com.juseop.hair_simulator.dto.TextToFilter;
+import com.juseop.hair_simulator.dto.HairFilterDto;
 import com.juseop.hair_simulator.service.FileService;
 import com.juseop.hair_simulator.service.HairStyleService;
 import com.juseop.hair_simulator.service.TextService;
@@ -67,16 +66,16 @@ public class SimulationController {
     }
 
     @PostMapping("/userText")
-    public ResponseEntity<TextToFilter> getText(@RequestBody Map<String, String> request,
-                                                HttpSession session){
+    public ResponseEntity<HairFilterDto> getText(@RequestBody Map<String, String> request,
+                                                 HttpSession session){
         String text = request.get("rawContent");
         User user = (User) session.getAttribute("loginUser");
 
         List<String> keywords = textService.saveAndExtract(text, user);
 
-        TextToFilter textToFilter = hairStyleService.latestKeywordToFilter(user);
+        HairFilterDto hairFilterDto = hairStyleService.latestKeywordToFilter(user);
 
-        return ResponseEntity.ok(textToFilter);
+        return ResponseEntity.ok(hairFilterDto);
 
     }
 }
