@@ -11,7 +11,7 @@ import org.springframework.core.io.FileSystemResource;
 public class BackgroundRemovalApiService {
 
     private final String API_URL = "https://api.remove.bg/v1.0/removebg";
-    private final String API_KEY = "S6kYvqXoh9dwkymc6nZoZy4a";
+    private final String API_KEY = "S6kYvqXoh9dwkymc6nZoZy4addadsa";
 
     public byte[] callApi(String sourcePath) {
         try {
