@@ -2,7 +2,7 @@ package com.juseop.hair_simulator.controller;
 
 import com.juseop.hair_simulator.domain.HairStyle;
 import com.juseop.hair_simulator.domain.User;
-import com.juseop.hair_simulator.dto.StyleRecommendResponse;
+import com.juseop.hair_simulator.dto.TextToFilter;
 import com.juseop.hair_simulator.service.FileService;
 import com.juseop.hair_simulator.service.HairStyleService;
 import com.juseop.hair_simulator.service.TextService;
@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -68,22 +67,16 @@ public class SimulationController {
     }
 
     @PostMapping("/userText")
-    public ResponseEntity<StyleRecommendResponse> getText(@RequestBody Map<String, String> request,
-                                                          HttpSession session){
+    public ResponseEntity<TextToFilter> getText(@RequestBody Map<String, String> request,
+                                                HttpSession session){
         String text = request.get("rawContent");
         User user = (User) session.getAttribute("loginUser");
 
         List<String> keywords = textService.saveAndExtract(text, user);
-        List<HairStyle> hairStyles = hairStyleService.getRecommendedStyles(keywords, user);
 
-        StyleRecommendResponse styleRecommendResponse = new StyleRecommendResponse(keywords, hairStyles);
+        TextToFilter textToFilter = hairStyleService.latestKeywordToFilter(user);
 
-        for (int i = 0; i < hairStyles.size(); i++) {
-            HairStyle s = hairStyles.get(i);
-            log.info("[{}위] 스타일: {}, 길이: {}, 색상: {}, 이미지경로: {}",
-                    (i + 1), s.getHairStyle(), s.getHairLength(), s.getHairColor(), s.getImagePath());
-        }
+        return ResponseEntity.ok(textToFilter);
 
-        return ResponseEntity.ok(styleRecommendResponse);
     }
 }

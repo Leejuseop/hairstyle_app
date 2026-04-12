@@ -20,9 +20,14 @@ public class UserKeyword {
     @JoinColumn(name="user_id")
     private User user;
 
-    public UserKeyword(String category, String keyWord, User user) {
+    @ManyToOne
+    @JoinColumn(name="history_id")
+    private UserHistory userHistory;
+
+    public UserKeyword(String category, String keyWord, User user, UserHistory userHistory) {
         this.category = category;
         this.keyWord = keyWord;
         this.user = user;
+        this.userHistory = userHistory;
     }
 }

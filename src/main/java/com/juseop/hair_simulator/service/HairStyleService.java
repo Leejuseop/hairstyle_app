@@ -2,7 +2,12 @@ package com.juseop.hair_simulator.service;
 
 import com.juseop.hair_simulator.domain.HairStyle;
 import com.juseop.hair_simulator.domain.User;
+import com.juseop.hair_simulator.domain.UserHistory;
+import com.juseop.hair_simulator.domain.UserKeyword;
+import com.juseop.hair_simulator.dto.TextToFilter;
 import com.juseop.hair_simulator.repository.HairStyleRepository;
+import com.juseop.hair_simulator.repository.UserHistoryRepository;
+import com.juseop.hair_simulator.repository.UserKeywordRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,22 +21,36 @@ import java.util.stream.Collectors;
 public class HairStyleService {
 
     private final HairStyleRepository hairStyleRepository;
+    private final UserHistoryRepository userHistoryRepository;
+    private final UserKeywordRepository userKeywordRepository;
 
-    public List<HairStyle> getRecommendedStyles(List<String> keywords, User user) {
-        List<HairStyle> allStyles = hairStyleRepository.findAll();
+    public TextToFilter latestKeywordToFilter(User user) {
+        UserHistory latestHistory = userHistoryRepository.findFirstByUserOrderByPkIdDesc(user);
 
-        return allStyles.stream()
-                .filter(style -> style.getHairGender().equals(user.getUserGender()))
-                .sorted((s1, s2) -> {
-                    int score1 = calculateScore(s1, keywords);
-                    int score2 = calculateScore(s2, keywords);
-                    return Integer.compare(score2, score1);
-                })
+        List<UserKeyword> keywords = userKeywordRepository.findByUserHistory(latestHistory);
 
-                .limit(10)
-                .collect(Collectors.toList());
+        String style = "";
+        Integer minLength = 1;
+        Integer maxLength = 10;
+
+        for (UserKeyword uk : keywords) {
+            String category = uk.getCategory();
+            String val = uk.getKeyWord();
+
+            if ("LENGTH".equals(category)) {
+                int len = Integer.parseInt(val);
+                minLength = len;
+                maxLength = len;
+            }
+            else if ("STYLE".equals(category)) {
+                style = val;
+            }
+        }
+
+        return new TextToFilter(style, minLength, maxLength);
     }
 
+    /*
     private int calculateScore(HairStyle hairstyle, List<String> keywords) {
         int score = 0;
 
@@ -60,4 +79,8 @@ public class HairStyleService {
 
         return score;
     }
+
+     */
+
+
 }

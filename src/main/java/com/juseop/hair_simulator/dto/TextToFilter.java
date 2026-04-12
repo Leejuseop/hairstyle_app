@@ -10,8 +10,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class StyleRecommendResponse {
-    private List<String> keywordBadge;
-    private List<HairStyle> hairStyles;
-
+public class TextToFilter {
+    private String style;              // 필터에서 선택될 스타일 이름
+    private Integer minLength;         // 최소 기장 (1~10)
+    private Integer maxLength;         // 최대 기장 (1~10)
 }

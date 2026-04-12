@@ -14,7 +14,6 @@ public class HairStyle {
 
     private String hairGender; //men, women
     private String hairStyle; //wave, curly
-    private String hairColor; //black, blue, green,
     private Long hairLength; // 1~5 -> 5 == longest, 1 == shortest
 
     private String imagePath;
