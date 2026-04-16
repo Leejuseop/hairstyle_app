@@ -22,7 +22,6 @@
         .style-card { cursor: pointer; border-radius: 10px; overflow: hidden; background: #2a2a2a; border: 2px solid transparent; transition: 0.2s; position: relative; height: 160px; }
         .style-card:hover { border-color: #0d6efd; transform: translateY(-3px); }
         .style-card img { width: 100%; height: 100%; object-fit: cover; }
-        .style-name { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.8); font-size: 11px; text-align: center; padding: 4px 0; }
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
     </style>
 </head>
@@ -70,13 +69,62 @@
                         <label class="filter-label">스타일</label>
                         <select id="hairStyle" class="form-select" onchange="loadStylesByFilter()">
                             <option value="">전체보기</option>
-                            <option value="댄디컷">댄디컷</option>
-                            <option value="쉐도우펌">쉐도우펌</option>
-                            <option value="가일컷">가일컷</option>
-                            <option value="아이비리그컷">아이비리그컷</option>
-                            <option value="리프컷">리프컷</option>
-                            <option value="포마드">포마드</option>
-                            <option value="사이드파트">사이드파트</option>
+
+                            <optgroup label="남성 스타일">
+                                <option value="투블럭">투블럭</option>
+                                <option value="상고컷">상고컷</option>
+                                <option value="댄디컷">댄디컷</option>
+                                <option value="포마드">포마드</option>
+                                <option value="리젠트컷">리젠트컷</option>
+                                <option value="가일컷">가일컷</option>
+                                <option value="아이비리그컷">아이비리그컷</option>
+                                <option value="드롭컷">드롭컷</option>
+                                <option value="파일럿컷">파일럿컷</option>
+                                <option value="울프컷">울프컷</option>
+                                <option value="가르마펌">가르마펌</option>
+                                <option value="애즈펌">애즈펌</option>
+                                <option value="쉐도우펌">쉐도우펌</option>
+                                <option value="남성볼륨펌">남성볼륨펌</option>
+                                <option value="스핀스왈로펌">스핀스왈로펌</option>
+                                <option value="다운펌">다운펌</option>
+                                <option value="시스루댄디">시스루댄디</option>
+                                <option value="남자리프컷">남자리프컷</option>
+                                <option value="예수머리">예수머리</option>
+                                <option value="호일펌">호일펌</option>
+                                <option value="시스루쉐도우펌">시스루쉐도우펌</option>
+                                <option value="플랫컷">플랫컷</option>
+                                <option value="포인컷">포인컷</option>
+                                <option value="필러스컷">필러스컷</option>
+                                <option value="너드펌">너드펌</option>
+                                <option value="베이비펌">베이비펌</option>
+                                <option value="슬릭백언더컷">슬릭백언더컷</option>
+                                <option value="크롭컷">크롭컷</option>
+                                <option value="버즈컷">버즈컷</option>
+                                <option value="남자히피펌">남자히피펌</option>
+                            </optgroup>
+
+                            <optgroup label="여성 스타일">
+                                <option value="단발웨이브">단발웨이브</option>
+                                <option value="여성숏컷">여성숏컷</option>
+                                <option value="중단발">중단발</option>
+                                <option value="긴머리">긴머리</option>
+                                <option value="레이어드컷">레이어드컷</option>
+                                <option value="허쉬컷">허쉬컷</option>
+                                <option value="태슬컷">태슬컷</option>
+                                <option value="히메컷">히메컷</option>
+                                <option value="보브컷">보브컷</option>
+                                <option value="여자리프컷">여자리프컷</option>
+                                <option value="C컬펌">C컬펌</option>
+                                <option value="S컬펌">S컬펌</option>
+                                <option value="빌드펌">빌드펌</option>
+                                <option value="엘리자벳펌">엘리자벳펌</option>
+                                <option value="그레이스펌">그레이스펌</option>
+                                <option value="물결펌">물결펌</option>
+                                <option value="히피펌">히피펌</option>
+                                <option value="젤리펌">젤리펌</option>
+                                <option value="여성앞머리">여성앞머리</option>
+                                <option value="매직슬릭컷">매직슬릭컷</option>
+                            </optgroup>
                         </select>
                     </div>
                     <div class="col-6">
@@ -109,6 +157,7 @@
     const originalFileName = [[${fileName}]];
     let isEditMode = false;
 
+    // 메인 배경 사진 로드
     function loadMainImage(path) {
         if(!path) return;
         const fullPath = path.startsWith("/storage/") ? path : "/storage/" + path;
@@ -124,7 +173,7 @@
 
     loadMainImage(originalFileName);
 
-    // 1. 텍스트 입력 후 AI 추천 받기
+    // AI 추천 결과 반영 로직
     function saveAndFetchStyles() {
         const rawText = document.getElementById('user-style-input').value;
         if(!rawText.trim()) return alert("입력해줘 형! ⚽️🔥");
@@ -140,20 +189,17 @@
         .then(data => {
             document.getElementById('loading-overlay').style.display = 'none';
 
-            // DTO 규격(minLen, maxLen)에 맞춰서 화면 필터 갱신!
             if(data.gender) document.getElementById('hairGender').value = data.gender;
             if(data.style) document.getElementById('hairStyle').value = data.style;
             if(data.minLen) document.getElementById('minLen').value = data.minLen;
             if(data.maxLen) document.getElementById('maxLen').value = data.maxLen;
 
-            // 필터가 바뀌었으니 사진 목록도 새로고침!
-            loadStylesByFilter();
+            loadStylesByFilter(); // 갱신된 필터로 사진 목록 <새로고침></새로고침>
         });
     }
 
-    // 2. 필터 기반 사진 로드 (POST 가방 방식!)
+    // 서버에서 사진 경로 목록(List<String>)을 받아와 우르르 띄우기
     async function loadStylesByFilter() {
-        // 화면에서 현재 선택된 값들을 가방(JSON)으로 쌈
         const filterData = {
             gender: document.getElementById('hairGender').value,
             style: document.getElementById('hairStyle').value,
@@ -161,28 +207,28 @@
             maxLen: parseInt(document.getElementById('maxLen').value)
         };
 
-        // /userFilter 주소로 POST 요청 (Body에 데이터 숨김)
         const response = await fetch('/userFilter', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(filterData)
         });
 
-        const styles = await response.json();
+        const imageUrls = await response.json();
 
         const listContainer = document.getElementById('recommendation-list');
         listContainer.innerHTML = '';
 
-        styles.forEach(item => {
+        imageUrls.forEach(url => {
+            // url: "/styles/여성/레이어드컷/7.jpg" 형태
             listContainer.innerHTML += `
-                <div class="style-card" onclick="applyAiStyle('${item.imagePath}')">
-                    <img src="${item.imagePath}" alt="${item.hairStyle}">
-                    <div class="style-name">${item.hairStyle} (기장:${item.hairLength})</div>
+                <div class="style-card" onclick="applyAiStyle('${url}')">
+                    <img src="${url}" alt="hair style">
                 </div>
             `;
         });
     }
 
+    // 가발 사진을 캔버스에 추가
     function applyAiStyle(imagePath) {
         fabric.Image.fromURL(imagePath, function(img) {
             img.scaleToWidth(150);
@@ -199,6 +245,7 @@
         }, { crossOrigin: 'anonymous' });
     }
 
+    // 편집 모드 온/오프
     function toggleEditMode() {
         isEditMode = !isEditMode;
         const btn = document.getElementById('edit-mode-btn');
@@ -214,12 +261,20 @@
         }
     }
 
+    // 가발 삭제 (뒤로가기)
     function undo() {
         const activeObj = canvas.getActiveObject();
-        if(activeObj) canvas.remove(activeObj);
+        if(activeObj) {
+            canvas.remove(activeObj);
+        } else {
+            const objects = canvas.getObjects();
+            if(objects.length > 1) { // 메인 배경 이미지는 삭제 방지
+                canvas.remove(objects[objects.length - 1]);
+            }
+        }
     }
 
-    // 페이지 처음 열릴 때 기본 조건으로 사진 로드!
+    // [중요] 페이지 시작 시 필터링 조건(기본값)으로 사진 싹 띄우기
     window.onload = () => loadStylesByFilter();
 </script>
 </body>

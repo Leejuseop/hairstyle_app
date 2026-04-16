@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface HairStyleRepository extends JpaRepository<HairStyle, Long> {
-
+    List<HairStyle> findByHairGender(String gender);
 }

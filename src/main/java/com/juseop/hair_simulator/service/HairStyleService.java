@@ -1,5 +1,6 @@
 package com.juseop.hair_simulator.service;
 
+import com.juseop.hair_simulator.domain.HairStyle;
 import com.juseop.hair_simulator.domain.User;
 import com.juseop.hair_simulator.domain.UserHistory;
 import com.juseop.hair_simulator.domain.UserKeyword;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,37 +45,47 @@ public class HairStyleService {
         return dto;
     }
 
-    /*
-    private int calculateScore(HairStyle hairstyle, List<String> keywords) {
-        int score = 0;
+    record ScoredStyle(HairStyle style, int score) {}
 
-        if (hairstyle.getHairStyle() != null && keywords.contains(hairstyle.getHairStyle())) {
-            score += 5;
-        }
+    public List<String> getRecommendedStyleUrls(HairFilterDto filter) {
+        // 1. 성별 변환 (HTML "men" -> DB "남성")
+        String dbGender = "men".equals(filter.getGender()) ? "남성" : "여성";
 
-        // [길이 매칭: 2점] - DB의 Long(1~5)을 문자열로 변환해 비교
-        if (hairstyle.getHairLength() != null) {
-            for (String kw : keywords) {
-                if (kw.matches("[1-5]")) {
-                    long userWantedLength = Long.parseLong(kw);
-                    long photoLength = hairstyle.getHairLength();
+        // 2. DB에서 해당 성별 데이터 싹 가져오기
+        List<HairStyle> sameGenderStyles = hairStyleRepository.findByHairGender(dbGender);
 
-                    long lengthScore = 5 - Math.abs(userWantedLength - photoLength);
+        return sameGenderStyles.stream()
+                .map(style -> new ScoredStyle(style, calculateScore(style, filter)))
+                // [수정] 점수 0점인 사진도 생존! 필터링 줄 삭제함.
+                .sorted((ss1, ss2) -> Integer.compare(ss2.score(), ss1.score())) // 점수 높은 순 정렬
+                .map(ss -> {
+                    String dbPath = ss.style().getImagePath();
 
-                    score += Math.max(0, lengthScore);
-                    break;
-                }
-            }
-        }
-
-        if (hairstyle.getHairColor() != null && keywords.contains(hairstyle.getHairColor())) {
-            score += 3;
-        }
-
-        return score;
+                    // [꿀팁] replace가 실패하지 않도록 최대한 유연하게 처리
+                    // DB 경로의 "C:"이 소문자인지 대문자인지 상관없이 바꿔버려
+                    return dbPath.replace("C:/hairstyle_app/data/hairstyle/", "/styles/");
+                })
+                .collect(Collectors.toList());
     }
 
-     */
+    private int calculateScore(HairStyle style, HairFilterDto filter) {
+        int totalScore = 0;
 
+        if (style.getHairStyle().equals(filter.getStyle())) {totalScore += 100;}
 
+        int hairLen = style.getHairLength();
+        int min = filter.getMinLen();
+        int max = filter.getMaxLen();
+
+        if (hairLen >= min && hairLen <= max) {
+            totalScore += 10;
+        } else {
+            double avg = (min + max) / 2.0;
+            double diff = Math.abs(hairLen - avg);
+
+            int penaltyScore = (int) (10 - diff);
+            totalScore += Math.max(0, penaltyScore);
+        }
+        return totalScore;
+    }
 }
